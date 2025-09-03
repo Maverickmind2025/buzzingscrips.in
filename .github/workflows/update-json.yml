@@ -1,4 +1,43 @@
-name: Update & Deploy NSE Buzz Data
+name: Update & Deploy NSE Buzz Data (SerpAPI)
+
+on:
+  schedule:
+    - cron: "0 4,8,12 * * 1-5"   # 3 times/day, Mon–Fri (adjust as needed)
+  workflow_dispatch:
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate JSON from SerpAPI
+        run: python scripts/generate_json_serpapi.py
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+
+      - name: Prep deploy folder (only JSONs)
+        run: |
+          mkdir -p out
+          cp realtime_hits.json latest.json out/
+
+      - name: FTP Deploy to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./out/
+          server-dir: /public_html/data
 
 on:
   schedule:
