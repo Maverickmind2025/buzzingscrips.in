@@ -1,0 +1,16 @@
+{
+  "companies": [
+    {
+      "name": "Reliance Industries Ltd",
+      "symbol": "RELIANCE",
+      "industry": "Energy",
+      "norm": "reliance industries ltd"
+    },
+    {
+      "name": "Infosys Ltd",
+      "symbol": "INFY",
+      "industry": "IT",
+      "norm": "infosys ltd"
+    }
+  ]
+}
