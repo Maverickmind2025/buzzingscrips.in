@@ -2,7 +2,7 @@ name: Update & Deploy NSE Buzz Data (SerpAPI)
 
 on:
   schedule:
-    - cron: "0 4,8,12 * * 1-5"   # 3 times/day, Mon–Fri (adjust as needed)
+    - cron: "0 5,8,10 * * 1-5"   # 05:00,08:00,10:00 UTC
   workflow_dispatch:
 
 jobs:
