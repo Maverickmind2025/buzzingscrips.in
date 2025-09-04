@@ -1,13 +1,15 @@
-name: Update & Deploy NSE Buzz Data (SerpAPI)
+name: Update & Deploy NSE Buzz Data
 
 on:
   schedule:
-    - cron: "0 5,8,10 * * 1-5"   # 05:00,08:00,10:00 UTC
+    # Every 2 hours during NSE trading hours (9:15–15:30 IST)
+    - cron: "15 4-10 * * 1-5"
   workflow_dispatch:
 
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -15,68 +17,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install requests
 
       - name: Generate JSON from SerpAPI
-        run: python scripts/generate_json_serpapi.py
         env:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-
-      - name: Prep deploy folder (only JSONs)
-        run: |
-          mkdir -p out
-          cp realtime_hits.json latest.json out/
-
-      - name: FTP Deploy to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./out/
-          server-dir: /public_html/data
-
-on:
-  schedule:
-    - cron: "*/30 3-10 * * 1-5"   # every 30 mins Mon–Fri, 09:00–15:59 IST (UTC times)
-  workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/update-json.yml"
-      - "scripts/generate_json.py"
-      - "nse_companies.json"
-
-jobs:
-  update-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Install deps
-        run: pip install pytrends pandas
-
-      - name: Generate JSON
         run: python scripts/generate_json.py
 
-      - name: Prep deploy folder (only JSONs)
-        run: |
-          mkdir -p out
-          cp realtime_hits.json latest.json out/
-
       - name: FTP Deploy to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./out/
-          server-dir: /public_html/data/
+          protocol: ftp
+          server-dir: /public_html/
+          dangerous-clean-slate: true
